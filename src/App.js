@@ -1,75 +1,83 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import React from 'react';
-import './App.css';
 import axios from 'axios';
+import Boss from './components/Boss';
+import styled from '@emotion/styled';
 
-const TOKEN_URL = 'https://us.battle.net/oauth/token';
-const CREDS =
-  'ZWJmZmQ0NDNlNzNlNGJlYWE5N2U1OTAyNGNmOTZjOTQ6UjhjUXc2V3BCdEM1Z08xT3cxUDZRN1ZYVlFhOTVwcWE=';
+const AppWrapper = styled.div`
+  margin: -8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: row;
+  background-image: url('http://getwallpapers.com/wallpaper/full/8/0/8/1291643-new-wow-orc-wallpaper-3840x2160.jpg');
+  background-repeat: no-repeat;
+  background-size: 100%;
+  height: 100vh;
+  justify-content: center;
+`;
+
+const Input = styled.input`
+  width: 200px;
+  height: 32px;
+  font-size: 18px;
+  padding-left: 16px;
+  border-style: none;
+  border-top-left-radius: 24px;
+  border-bottom-left-radius: 24px;
+`;
+
+const Button = styled.button`
+  width: 64px;
+  color: white;
+  height: 34px;
+  border-style: none;
+  border-top-right-radius: 24px;
+  border-bottom-right-radius: 24px;
+  background-color: red;
+  position: absolute;
+`;
 
 function App() {
-  const [creature, setCreature] = useState({});
-  const [newCreature, setNewCreature] = useState('');
-  const [token, setToken] = useState('');
-  const [portraits, setPortraits] = useState([]);
+  const [creatures, setCreature] = useState([]);
+  const [zone, setZone] = useState('');
 
-  const URL = `https://us.api.blizzard.com/data/wow/creature/${newCreature}?namespace=static-us&locale=en_US&access_token=${token}`;
-
-  useEffect(() => {
-    axios
-      .get(
-        `${TOKEN_URL}?grant_type=client_credentials`,
-        buildHeader('Basic', CREDS)
-      )
-      .then(response => {
-        setToken(response.data.access_token);
-      });
-  }, []);
-
-  const buildHeader = (tokenType, token) => {
-    const header = {
-      headers: {
-        Authorization: tokenType + ' ' + token
-      }
-    };
-    return header;
-  };
+  const URL = `http://localhost:3001/api/bosses`;
 
   const handleChange = event => {
     event.preventDefault();
-    setNewCreature(event.target.value);
+    setZone(event.target.value);
   };
 
   const handleSelect = event => {
     event.preventDefault();
-    const header = buildHeader('Bearer', token);
 
-    axios.get(URL, header).then(res => {
+    axios.get(`${URL}/${zone}`).then(res => {
       setCreature(res.data);
-
-      axios.get(res.data.creature_displays[0].key.href, header).then(stress => {
-        const images = stress.data.assets.map(image => image.value);
-        setPortraits(images);
-        console.log(images);
-      });
     });
   };
   return (
-    <div className='App'>
-      <h1>World of Warcraft Bestiary</h1>
+    <AppWrapper>
       <form>
         <label>
-          enter NPC id : <input type='text' onChange={handleChange} />
+          <Input type='text' onChange={handleChange} />
         </label>
-        <button type='submit' onClick={handleSelect}>
-          I am spartan
-        </button>
+        <Button type='submit' onClick={handleSelect}>
+          <strong>Search</strong>
+        </Button>
       </form>
       <div>
-        <h4>{creature.name}</h4>
-        <img src={portraits[2]} alt=':D' />
+        <ul>
+          {creatures.map(creature => (
+            <Boss
+              name={creature.name}
+              zone={creature.zone}
+              baseHp={creature.baseHp}
+              spells={creature.spells}
+            />
+          ))}
+        </ul>
       </div>
-    </div>
+    </AppWrapper>
   );
 }
 
