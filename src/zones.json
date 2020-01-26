@@ -1,0 +1,14 @@
+{
+  "zones": [
+    {
+      "name": "The Underrot",
+      "zone": "Nazmir",
+      "background": "url"
+    },
+    {
+      "name": "Kings Rest",
+      "zone": "Zul'dazar",
+      "background": "url"
+    }
+  ]
+}
